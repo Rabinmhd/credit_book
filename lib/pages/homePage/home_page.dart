@@ -1,6 +1,8 @@
 import 'package:credit_book/pages/addTransactionPage/add_item_page.dart';
+import 'package:credit_book/pages/homePage/home_page_provider.dart';
 import 'package:credit_book/pages/homePage/widgets/tab_view_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
@@ -11,7 +13,7 @@ class MyHomePage extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("credit book"),
+          title: const Text("Credit book"),
           bottom: const TabBar(tabs: [
             Tab(
               child: Text("To get"),
@@ -21,14 +23,24 @@ class MyHomePage extends StatelessWidget {
             )
           ]),
         ),
-        body: const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: TabBarView(
-            children: [
-              TabViewWidget(),
-              TabViewWidget(),
-            ],
-          ),
+        body: Consumer<HomePageProvider>(
+          builder: (context, data, _) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TabBarView(
+                children: [
+                  TabViewWidget(
+                      listOfData: data.toGetList,
+                      totalAmount: data.totalOfToGet,
+                      isPagetoGet: true),
+                  TabViewWidget(
+                      listOfData: data.toGiveList,
+                      totalAmount: data.totalOfToGive,
+                      isPagetoGet: false),
+                ],
+              ),
+            );
+          },
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {

@@ -1,4 +1,8 @@
+import 'package:credit_book/pages/homePage/home_page_provider.dart';
+import 'package:credit_book/utils/transaction_model.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class AddItemPage extends StatelessWidget {
@@ -6,11 +10,8 @@ class AddItemPage extends StatelessWidget {
 
   TextEditingController amountController = TextEditingController();
   TextEditingController nameController = TextEditingController();
-  TextEditingController textController = TextEditingController();
-
-  List<String> dropdownItems = [];
-  ValueNotifier<String?> selectedDropdownValue = ValueNotifier(null);
-  ValueNotifier<bool> isRadioButtonSelected = ValueNotifier(false);
+  TextEditingController purposeController = TextEditingController();
+  ValueNotifier<bool> isToGetRadioButtonSelected = ValueNotifier(false);
 
   @override
   Widget build(BuildContext context) {
@@ -24,32 +25,37 @@ class AddItemPage extends StatelessWidget {
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: 'Enter Name'),
+              decoration: const InputDecoration(labelText: 'Name*'),
+            ),
+            TextField(
+              controller: purposeController,
+              keyboardType: TextInputType.text,
+              decoration: const InputDecoration(labelText: 'Type*'),
             ),
             TextField(
               controller: amountController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Enter Amount'),
+              decoration: const InputDecoration(labelText: 'Enter Amount*'),
             ),
             const SizedBox(height: 16),
             ValueListenableBuilder(
-              valueListenable: isRadioButtonSelected,
+              valueListenable: isToGetRadioButtonSelected,
               builder: (context, value, _) {
                 return Row(
                   children: [
                     Radio(
                       value: true,
-                      groupValue: isRadioButtonSelected.value,
+                      groupValue: isToGetRadioButtonSelected.value,
                       onChanged: (bool? value) {
-                        isRadioButtonSelected.value = value!;
+                        isToGetRadioButtonSelected.value = value!;
                       },
                     ),
                     const Text('To get'),
                     Radio(
                       value: false,
-                      groupValue: isRadioButtonSelected.value,
+                      groupValue: isToGetRadioButtonSelected.value,
                       onChanged: (bool? value) {
-                        isRadioButtonSelected.value = value!;
+                        isToGetRadioButtonSelected.value = value!;
                       },
                     ),
                     const Text('To give'),
@@ -57,51 +63,14 @@ class AddItemPage extends StatelessWidget {
                 );
               },
             ),
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey[200], // Light gray color
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const Text("Select Type"),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  ValueListenableBuilder<String?>(
-                    valueListenable: selectedDropdownValue,
-                    builder: (context, value, child) {
-                      return DropdownButton<String>(
-                        value: value,
-                        items: dropdownItems
-                            .map((String value) => DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                ))
-                            .toList(),
-                        onChanged: (String? newValue) {
-                          selectedDropdownValue.value = newValue;
-                        },
-                        hint: const Text('Select Item'),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () => _showAddItemPopup(context),
-                    child: const Text('Add Item'),
-                  ),
-                ],
-              ),
-            ),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      addTransactionData(context);
+                    },
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -127,37 +96,42 @@ class AddItemPage extends StatelessWidget {
     );
   }
 
-  void _showAddItemPopup(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Add Item'),
-          content: TextField(
-            controller: textController,
-            decoration: const InputDecoration(labelText: 'Enter Text'),
+  addTransactionData(BuildContext context) async {
+    try {
+      if (nameController.text.isNotEmpty &&
+          purposeController.text.isNotEmpty &&
+          amountController.text.isNotEmpty) {
+        final dataToAdded = TransactionModel(
+            name: nameController.text,
+            purpose: purposeController.text,
+            amount: double.parse(amountController.text),
+            dateTime: DateFormat('h:mm a dd-MM-yy')
+                .format(DateTime.now())
+                .toString());
+        if (isToGetRadioButtonSelected.value) {
+          Provider.of<HomePageProvider>(context, listen: false)
+              .addDataToGetList(dataToAdded);
+          Navigator.pop(context);
+        } else {
+          Provider.of<HomePageProvider>(context, listen: false)
+              .addDataToGiveList(dataToAdded);
+          Navigator.pop(context);
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Fill the fields'),
+            duration: Duration(seconds: 2),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                dropdownItems.add(textController.text);
-                textController.clear();
-
-                selectedDropdownValue.value = dropdownItems.last;
-
-                Navigator.pop(context);
-              },
-              child: const Text('Add'),
-            ),
-          ],
         );
-      },
-    );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }
