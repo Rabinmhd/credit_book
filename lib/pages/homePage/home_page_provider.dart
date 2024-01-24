@@ -1,20 +1,25 @@
 import 'package:credit_book/utils/transaction_model.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class HomePageProvider extends ChangeNotifier {
   List<TransactionModel> toGetList = [];
   List<TransactionModel> toGiveList = [];
-  late BannerAd bannerAd;
+
   bool isAdLoaded = false;
   double totalOfToGet = 0;
   double totalOfToGive = 0;
+  changeIsAdLoaded() {
+    isAdLoaded = true;
+    notifyListeners();
+  }
+
   addDataToGetList(TransactionModel dataToAdd) async {
     final toGetListDb =
         await Hive.openBox<TransactionModel>("transaction_db_to_get");
     toGetListDb.add(dataToAdd);
     toGetList.clear();
+    totalOfToGet = 0;
     toGetList.addAll(toGetListDb.values);
 
     for (var element in toGetList) {
@@ -29,6 +34,7 @@ class HomePageProvider extends ChangeNotifier {
         await Hive.openBox<TransactionModel>("transaction_db_to_give");
     toGiveListDb.add(dataToAdd);
     toGiveList.clear();
+    totalOfToGive = 0;
     toGiveList.addAll(toGiveListDb.values);
 
     for (var element in toGiveList) {
@@ -38,17 +44,6 @@ class HomePageProvider extends ChangeNotifier {
   }
 
   HomePageProvider() {
-    bannerAd = BannerAd(
-      size: AdSize.banner,
-      adUnitId: "ca-app-pub-7535469304880829/5484847072",
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          isAdLoaded = true;
-        },
-      ),
-      request: const AdRequest(),
-    );
-    bannerAd.load();
     getAllData();
   }
   deleteData(int index, bool isPageToGet) async {
@@ -57,12 +52,14 @@ class HomePageProvider extends ChangeNotifier {
           await Hive.openBox<TransactionModel>("transaction_db_to_get");
       toGetList.removeAt(index);
       toGetListDb.deleteAt(index);
+      getAllData();
       notifyListeners();
     } else {
       final toGiveListDb =
           await Hive.openBox<TransactionModel>("transaction_db_to_give");
       toGiveList.removeAt(index);
       toGiveListDb.deleteAt(index);
+      getAllData();
       notifyListeners();
     }
   }
@@ -73,6 +70,10 @@ class HomePageProvider extends ChangeNotifier {
 
     final toGiveListDb =
         await Hive.openBox<TransactionModel>("transaction_db_to_give");
+    toGetList.clear();
+    toGiveList.clear();
+    totalOfToGet = 0;
+    totalOfToGive = 0;
     toGetList.addAll(toGetListDb.values);
     toGiveList.addAll(toGiveListDb.values);
     for (var element in toGetList) {

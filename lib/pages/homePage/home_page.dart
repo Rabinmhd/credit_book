@@ -3,12 +3,35 @@ import 'package:credit_book/pages/homePage/home_page_provider.dart';
 import 'package:credit_book/pages/homePage/widgets/tab_view_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  late BannerAd bannerAd;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: "ca-app-pub-7535469304880829/5484847072",
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          Provider.of<HomePageProvider>(context, listen: false)
+              .changeIsAdLoaded();
+        },
+      ),
+      request: const AdRequest(),
+    );
+    bannerAd.load();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +67,10 @@ class MyHomePage extends StatelessWidget {
           ),
           bottomNavigationBar: data.isAdLoaded
               ? Container(
-                  height: data.bannerAd.size.height.toDouble(),
-                  width: data.bannerAd.size.width.toDouble(),
+                  height: bannerAd.size.height.toDouble(),
+                  width: bannerAd.size.width.toDouble(),
                   color: Colors.black,
-                  child: AdWidget(ad: data.bannerAd),
+                  child: AdWidget(ad: bannerAd),
                 )
               : const SizedBox(),
           floatingActionButton: FloatingActionButton(

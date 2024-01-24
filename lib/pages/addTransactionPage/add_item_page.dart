@@ -1,17 +1,44 @@
 import 'package:credit_book/pages/homePage/home_page_provider.dart';
 import 'package:credit_book/utils/transaction_model.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
-class AddItemPage extends StatelessWidget {
+class AddItemPage extends StatefulWidget {
   AddItemPage({super.key});
 
+  @override
+  State<AddItemPage> createState() => _AddItemPageState();
+}
+
+class _AddItemPageState extends State<AddItemPage> {
   TextEditingController amountController = TextEditingController();
+
   TextEditingController nameController = TextEditingController();
+
   TextEditingController purposeController = TextEditingController();
+
   ValueNotifier<bool> isToGetRadioButtonSelected = ValueNotifier(false);
+  ValueNotifier<bool> isAdLoaded = ValueNotifier(false);
+  late BannerAd bannerAd;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: "ca-app-pub-7535469304880829/1882312284",
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          isAdLoaded.value = true;
+        },
+      ),
+      request: const AdRequest(),
+    );
+    bannerAd.load();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,30 +91,34 @@ class AddItemPage extends StatelessWidget {
               },
             ),
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      addTransactionData(context);
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.black12),
-                      child: const Center(
-                          child: Padding(
-                        padding: EdgeInsets.all(10.0),
-                        child: Text(
-                          "Save",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
-                        ),
-                      )),
-                    ),
+              child: ValueListenableBuilder(
+                  valueListenable: isAdLoaded,
+                  builder: (context, data, _) {
+                    return Container(
+                      child: data ? AdWidget(ad: bannerAd) : const SizedBox(),
+                    );
+                  }),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            InkWell(
+              onTap: () {
+                addTransactionData(context);
+              },
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.black12),
+                child: const Center(
+                    child: Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Text(
+                    "Save",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                ],
+                )),
               ),
             )
           ],
