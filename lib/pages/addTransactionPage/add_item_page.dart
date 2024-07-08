@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class AddItemPage extends StatefulWidget {
-  AddItemPage({super.key});
+  const AddItemPage({super.key});
 
   @override
   State<AddItemPage> createState() => _AddItemPageState();
@@ -15,17 +15,15 @@ class AddItemPage extends StatefulWidget {
 
 class _AddItemPageState extends State<AddItemPage> {
   TextEditingController amountController = TextEditingController();
-
   TextEditingController nameController = TextEditingController();
-
   TextEditingController purposeController = TextEditingController();
 
-  ValueNotifier<bool> isToGetRadioButtonSelected = ValueNotifier(false);
+  ValueNotifier<bool> isToGetRadioButtonSelected = ValueNotifier(true);
   ValueNotifier<bool> isAdLoaded = ValueNotifier(false);
   late BannerAd bannerAd;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     bannerAd = BannerAd(
       size: AdSize.banner,
@@ -52,17 +50,40 @@ class _AddItemPageState extends State<AddItemPage> {
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name*'),
+              decoration: const InputDecoration(
+                labelText: 'Name*',
+                labelStyle: TextStyle(color: Colors.black),
+                filled: true,
+                border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
+              ),
             ),
+            const SizedBox(height: 8),
             TextField(
               controller: purposeController,
               keyboardType: TextInputType.text,
-              decoration: const InputDecoration(labelText: 'Type*'),
+              decoration: const InputDecoration(
+                labelText: 'Purpose*',
+                labelStyle: TextStyle(color: Colors.black),
+                filled: true,
+                border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
+              ),
             ),
+            const SizedBox(height: 8),
             TextField(
               controller: amountController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Enter Amount*'),
+              decoration: const InputDecoration(
+                labelText: 'Amount*',
+                labelStyle: TextStyle(color: Colors.black),
+                filled: true,
+                border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
+              ),
             ),
             const SizedBox(height: 16),
             ValueListenableBuilder(
@@ -92,16 +113,15 @@ class _AddItemPageState extends State<AddItemPage> {
             ),
             Expanded(
               child: ValueListenableBuilder(
-                  valueListenable: isAdLoaded,
-                  builder: (context, data, _) {
-                    return Container(
-                      child: data ? AdWidget(ad: bannerAd) : const SizedBox(),
-                    );
-                  }),
+                valueListenable: isAdLoaded,
+                builder: (context, data, _) {
+                  return Container(
+                    child: data ? AdWidget(ad: bannerAd) : const SizedBox(),
+                  );
+                },
+              ),
             ),
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
             InkWell(
               onTap: () {
                 addTransactionData(context);
@@ -109,16 +129,19 @@ class _AddItemPageState extends State<AddItemPage> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.black12),
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.black12,
+                ),
                 child: const Center(
-                    child: Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Text(
-                    "Save",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  child: Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: Text(
+                      "Save",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
                   ),
-                )),
+                ),
               ),
             )
           ],
@@ -127,18 +150,18 @@ class _AddItemPageState extends State<AddItemPage> {
     );
   }
 
-  addTransactionData(BuildContext context) async {
+  void addTransactionData(BuildContext context) async {
     try {
       if (nameController.text.isNotEmpty &&
           purposeController.text.isNotEmpty &&
           amountController.text.isNotEmpty) {
         final dataToAdded = TransactionModel(
-            name: nameController.text,
-            purpose: purposeController.text,
-            amount: double.parse(amountController.text),
-            dateTime: DateFormat('h:mm a dd-MM-yy')
-                .format(DateTime.now())
-                .toString());
+          name: nameController.text,
+          purpose: purposeController.text,
+          amount: double.parse(amountController.text),
+          dateTime:
+              DateFormat('h:mm a dd-MM-yy').format(DateTime.now()).toString(),
+        );
         if (isToGetRadioButtonSelected.value) {
           Provider.of<HomePageProvider>(context, listen: false)
               .addDataToGetList(dataToAdded);

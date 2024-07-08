@@ -65,20 +65,12 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-          bottomNavigationBar: data.isAdLoaded
-              ? Container(
-                  height: bannerAd.size.height.toDouble(),
-                  width: bannerAd.size.width.toDouble(),
-                  color: Colors.black,
-                  child: AdWidget(ad: bannerAd),
-                )
-              : const SizedBox(),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddItemPage(),
+                  builder: (context) => const AddItemPage(),
                 ),
               );
             },
